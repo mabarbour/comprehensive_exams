@@ -1,0 +1,18 @@
+Consumer-Resource Model with logistic growth from prey and Beddington-DeAngelis functional response of consumer (incorporates predatro interference)
+========================================================
+
+Resource ZNG
+
+```{r}
+R_ZNG <- function(a, r, K, b, c, C){
+  curve((r*(1 - R/K)*(1 + b*R + c*(C-1)))/a, xname = "R", from = 0, to = 2)
+}
+
+R_ZNG(a = 1.3, r = 1, K = 2, b = 1, c = 1/10, C = 10)
+
+curve((1*(1 - R/2)*(1 + 1*R + 0*(10-1)))/1.3, xname = "R", from = 0, to = 2, ylim = c(0,2))
+curve((1*(1 - R/2)*(1 + 1*R + .01*(10-1)))/1.3, xname = "R", from = 0, to = 2, add = TRUE)
+```
+
+Increasing c or P, i.e. increasing predator interference appears to increase the slope of the resource ZNG, this should stabilize the consumer resource interaction over a broader range of parameter space.
+

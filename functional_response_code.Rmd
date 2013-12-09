@@ -1,0 +1,94 @@
+Functional Responses
+=====================
+
+Here is my attempt to document all of the major forms of functional responses that have come up in the literature on predator-prey interactions, as well as their origins.
+
+I believe the origin of the Type 1 functional response comes from Lotka-Volterra predator-prey models (~1926). Essentially, predator attack rate is independent of prey density, and therefore increases linearly with prey population density. The Type 2 functional responses may be attributed to C.S. (Buzz) Holling (1959). In this model, predator attack rate saturates as prey population density increases. Finally, the Type 3 functional response occurs when predators have lower attack rate at low prey population densities, followed by increasing attack rates as prey population density increases until a saturation point. Under a Type 3 functional response, prey essentially have a refuge at lower prey population densities due to lower predator attack rates.
+
+All of these models assume that predator attack rate is a simple function of prey density.
+
+
+```{r}
+# pulled from my previous file FunctionalResponses.R
+
+######################## Functional Responses #####################################
+a <- 0.1 # attack rate of predator (all functional response types)
+w <- 0.1 # maximum attack rate of predator in Type 2 or 3 functional response
+D <- w/a # half saturation constant. Only applicable to Type 2 or 3 functional response. Don't intuitively understand this.
+
+par(mfrow = c(1,2)) # plot 2 graphs side-by-side
+
+# first plot: functional responses
+curve(a * x, 0, 2, xlab = "Prey Density", ylab = "Prey Killed per Predator") # Type 2
+curve(w * x / (D + x), 0, 2, add = TRUE, lty = 2) # Type 2
+curve(w * x^2/ (D^2 + x^2), 0, 2, add = TRUE, lty = 3) # Type 3
+
+# second plot: functional response per prey
+curve(a * x/x, 0, 2, xlab = "Prey Density", ylab = "Prey Killed per Predator per Prey", ylim = c(0,a))
+curve(w * x / (D + x)/x, 0, 2, add = TRUE, lty = 2)
+curve(w * x^2/ (D^2 + x^2)/x, 0, 2, add = TRUE, lty = 3)
+legend("bottomright", c("Type 1", "Type 2", "Type 3"), lty = 1:3, bty = "n", cex = 0.8)
+```
+
+There was also a generalized form of functional responses proposed by Koichi Fujii, C.S. Holling, and P.M. Mace (1986). Right now, the Type 3 functional response appears to be behaving a bit differential
+
+```{r}
+a = 0.1 # rate of successfull search
+Time = 1 # total time prey were exposed
+t = 0.05 # handling time per prey
+# c =  facilitation coefficient?
+# R = resource (aka prey) density
+
+generalized_prey_dependent_FR <- expression(Time/(t + 1 / ( a*R*exp(c*R))))
+curve(Time/(t + 1 / ( a*R*exp(0.005*R))), xname = "R", from = 0, to = 1000) # Type 1
+curve(Time/(t + 1 / ( a*R*exp(0*R))), add = TRUE, xname = "R", from = 0, to = 1000) # Type 2
+curve(Time/(t + 1 / ( a*R*exp(0.1*R))), add = TRUE, xname = "R", from = 0, to = 1000) # Type 3
+curve(Time/(t + 1 / ( a*R*exp(-0.01*R))), add = TRUE, xname = "R", from = 0, to = 1000) # Type 4
+```
+
+In contrast to the classic Type 1-3 functional responses, there are a suite of other functional responses that incorporate both prey and predator population densities. These models essentially recognize the fact that at high predator densities, predators may interfere with each other's foraging ability.
+
+```{r}
+# Beddington-DeAngelis Functional Response
+P = 10
+c = 1/P
+b = 0.05
+curve( a*x / (1 + b*x + 0*(P - 1)), from = 0, to = 100) # type 2 functional response, when c = 0 or P = 1
+curve( a*x / (1 + b*x + c*(P - 1)), add = TRUE, from = 0, to = 100, lty = 2)
+```
+
+Another interesting functional response I found came from work by Abrahamson & Weis studying gall-parasitoid interactions on goldenrod. In this system, certain galls are invulnerable to parasitism, due to their large size precluding oviposition from parasitoids. However, it also appears that one of the dominant parasitoids is unable to discriminate between vulnerable and invulnerable galls and actually will spend more time probing invulnerable galls compared to vulnerable ones. Below, is there functional response model that incorporates these "false targets".
+
+```{r}
+######### False target model for functional response.  This version was modified from Abrahamson & Weis 1997 pg. 305.  I believe their version is incorrect.  I tried using it but it does not replicate their graphs.  This current formulation does. ######
+a <- 1
+H <- 0.2 # handling time of vulnerable prey
+D <- 0 # discrimination time between vulnerable and invulnerable prey
+v <- 1.0 # fraction of vulnerable prey
+v1 <- 0.5
+v2 <- 0.25
+
+
+par(mfrow=c(1,3)) # setup graphs for easy comparison
+
+# Perfect discrimination, but decreasing the fraction of true targets
+D <- 0
+curve((a*v*x)/(1 + a*H*v*x + a*D*(1 - v)*x), from=0, to=50, ylim=c(0,5), ylab="Number encountered per parasitoid", xlab="Gall density", main="D = 0")
+curve((a*v1*x)/(1 + a*H*v1*x + a*D*(1 - v1)*x), from=0, to=50, col=2, ylim=c(0,10), add=T)
+curve((a*v2*x)/(1 + a*H*v2*x + a*D*(1 - v2)*x), from=0, to=50, col=3, add=T)
+legend("bottomright", legend=c("v = 1.0", "v = 0.5", "v = 0.25"), col=1:3, lty=1, bty="n")
+
+# weak discrimination, but decreasing the fraction of true targets
+D <- H*0.5
+curve((a*v*x)/(1 + a*H*v*x + a*D*(1 - v)*x), from=0, to=50, ylim=c(0,5), ylab="Number encountered per parasitoid", xlab="Gall density", main="D = H*0.5")
+curve((a*v1*x)/(1 + a*H*v1*x + a*D*(1 - v1)*x), from=0, to=50, col=2, ylim=c(0,10), add=T)
+curve((a*v2*x)/(1 + a*H*v2*x + a*D*(1 - v2)*x), from=0, to=50, col=3, add=T)
+legend("bottomright", legend=c("v = 1.0", "v = 0.5", "v = 0.25"), col=1:3, lty=1, bty="n")
+
+# anti-discrimination, but decreasing the fraction of true targets
+D <- H*2
+curve((a*v*x)/(1 + a*H*v*x + a*D*(1 - v)*x), from=0, to=50, ylim=c(0,5), ylab="Number encountered per parasitoid", xlab="Gall density", main="D = H*2")
+curve((a*v1*x)/(1 + a*H*v1*x + a*D*(1 - v1)*x), from=0, to=50, col=2, ylim=c(0,10), add=T)
+curve((a*v2*x)/(1 + a*H*v2*x + a*D*(1 - v2)*x), from=0, to=50, col=3, add=T)
+legend("bottomright", legend=c("v = 1.0", "v = 0.5", "v = 0.25"), col=1:3, lty=1, bty="n")
+```
