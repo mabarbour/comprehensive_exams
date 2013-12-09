@@ -4,6 +4,7 @@ Importance of modelling variance in population growth rates in accurately predic
 This code is based of Morris & Doak's MATLAB code (CITATION, pg. 29-30).  This code simulation discrete exponential growth trajectories with a set of observed population growth rates (lambda values).
 
 ```{r}
+library(ggplot2)
 ##########  Simulation Parameters
 lambdas <- c(1.00, 1.98, 1.02, 0.92, 0.53) # different lambda values to use for simulation.  There can be as many as you want.  For this simulation, each will be drawn with an equal probability.
 
@@ -95,6 +96,10 @@ for(i in 1:reps){
   cum_prob_extinct <- pops_extinct[2]/reps # cumulative probability of extinction
   names(cum_prob_extinct) <- "Cumulative probability of Extinction"
   print(cum_prob_extinct)
-}  
+}
+
+count_PVA_lambda_variance_simulation(mean_lambda = 1, sd_lambda = 0.01)
+count_PVA_lambda_variance_simulation(mean_lambda = 1, sd_lambda = 0.1)
+count_PVA_lambda_variance_simulation(mean_lambda = 1, sd_lambda = 1)
 ```
 
